@@ -24,6 +24,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->enum('availability', ['available', 'borrowed', 'reserved'])->default('available');
             $table->timestamps();
+
         });
     }
 
