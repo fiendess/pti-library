@@ -1,7 +1,7 @@
 <x-dashboard.layout>
     <x-slot:title>Books</x-slot:title>
     <h2>Books Management</h2><div class="container">
-    <h2>Tambah Buku ke Koleksi</h2>
+    <h2>Tambah Buku</h2>
 
     <form action="{{ route('books.store') }}" method="POST">
         @csrf
