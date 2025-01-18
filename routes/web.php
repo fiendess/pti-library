@@ -1,18 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BooksController;
+use App\Http\Controllers\BooksController;;
 
-
+// Route frontend
 Route::get('/', function () {
     return view('home', ['title' => 'Home Page']);
 });
-
-Route::get('/dashboard', function () {
-     return view('dashboard.dashboard', ['title' => 'Dashboard']);
-});
-
-Route::get('/dashboard/books', [BooksController::class, 'index']);
 
 Route::get('/mybook', function () {
     return view('mybook', ['title' => 'My Book']);
@@ -26,6 +20,14 @@ Route::get('/recommendation', function () {
     return view('recommendation', ['title' => 'Recommendation']);
 });
 
-Route::get('/dashboard/books/search', [BooksController::class, 'search'])->name('books.search');
-Route::get('/dashboard/books/create/{googleBooksId}', [BooksController::class, 'create'])->name('books.create');
-Route::post('/dashboard/books', [BooksController::class, 'store'])->name('books.store');
+
+// Route dashboard admin
+
+Route::get('/dashboard', function () {
+    return view('dashboard.dashboard', ['title' => 'Dashboard']);
+})->name('dashboard');
+
+// Buku
+Route::get('/dashboard/books', [BooksController::class, 'index'])->name('books.index');
+Route::post('/dashboard/books/add-from-api', [BooksController::class, 'addFromAPI'])->name('books.addFromAPI');
+Route::post('/dashboard/books/store', [BooksController::class, 'store'])->name('books.store');
