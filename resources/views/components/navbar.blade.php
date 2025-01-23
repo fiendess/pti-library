@@ -9,10 +9,30 @@
             <div class="ml-10 flex items-baseline space-x-4">
               <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
               <x-nav-link href="/" :active="request()->is('/')">Home</x-nav-link>
-              <x-nav-link href="/mybook" :active="request()->is('mybook')">My Book</x-nav-link>
+              <x-nav-link href="/mybook" :active="request()->is('mybook')">Libraries</x-nav-link>
               <x-nav-link href="/browse" :active="request()->is('browse')">Browse Book</x-nav-link>
-              <x-nav-link href="/recommendation" :active="request()->is('recommendation')">Recommendations</x-nav-link>
-         
+              <x-nav-link href="/recommendation" :active="request()->is('recommendation')">About</x-nav-link>
+              <form action="{{ route('search.locations') }}" method="GET">
+                @csrf
+                <input type="text" name="location" placeholder="Search for bookstores or libraries" required>
+                <button type="submit">Search Locations</button>
+            </form>
+
+            <div>
+                @if (isset($locations))
+                    <ul>
+                        @foreach ($locations as $location)
+                            <li>
+                                <h3>{{ $location['name'] }}</h3>
+                                <p>{{ $location['formatted_address'] }}</p>
+                                <p>Rating: {{ $location['rating'] ?? 'No rating' }}</p>
+                                <a href="https://www.google.com/maps?q={{ $location['geometry']['location']['lat'] }},{{ $location['geometry']['location']['lng'] }}" target="_blank">View on Map</a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+
             </div>
           </div>
         </div>

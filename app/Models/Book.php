@@ -22,14 +22,6 @@ class Book extends Model
         'cover_image',
         'quantity',
         'availability',
-
     ];
-    
-    protected $attributes = [
-    'genre_id' => 1, 
-];
 
-    protected $casts = [
-        'availability' => 'boolean', 
-    ];
 }

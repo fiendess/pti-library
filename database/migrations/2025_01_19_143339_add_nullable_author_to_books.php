@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('books', function (Blueprint $table) {
-            $table->unsignedBigInteger('view_count')->default(0);
+            $table->string('author')->default('Unknown Author')->change();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('books', function (Blueprint $table) {
-            //
-        });
+         Schema::table('books', function (Blueprint $table) {
+        $table->string('author')->default(null)->change();
+    });
     }
 };

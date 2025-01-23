@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BooksController;;
+use App\Http\Controllers\BooksController;
+use App\Http\Controllers\LocationsController;
 
 // Route frontend
 Route::get('/', function () {
@@ -20,14 +21,9 @@ Route::get('/recommendation', function () {
     return view('recommendation', ['title' => 'Recommendation']);
 });
 
+Route::get('/search-books', [BooksController::class, 'searchBooks'])->name('search.books');
+Route::get('/search-locations', [LocationsController::class, 'searchLocations'])->name('search.locations');
+Route::get('/find-libraries', [LocationController::class, 'findLibraries'])->name('find.libraries');   
+// Route untuk mencari lokasi berdasarkan koordinat pengguna
+Route::get('/search-locations-nearby', [LocationsController::class, 'searchNearbyLocations']);
 
-// Route dashboard admin
-
-Route::get('/dashboard', function () {
-    return view('dashboard.dashboard', ['title' => 'Dashboard']);
-})->name('dashboard');
-
-// Buku
-Route::get('/dashboard/books', [BooksController::class, 'index'])->name('books.index');
-Route::post('/dashboard/books/add-from-api', [BooksController::class, 'addFromAPI'])->name('books.addFromAPI');
-Route::post('/dashboard/books/store', [BooksController::class, 'store'])->name('books.store');
