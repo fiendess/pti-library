@@ -5,12 +5,13 @@ use App\Http\Controllers\BooksController;
 use App\Http\Controllers\LocationsController;
 
 // Route frontend
-Route::get('/', function () {
-    return view('home', ['title' => 'Home Page']);
-});
+// Route::get('/', function () {
+//     return view('home', ['title' => 'Home Page']);
+// });
+Route::get('/', [BooksController::class, 'index'])->name('home');
 
-Route::get('/mybook', function () {
-    return view('mybook', ['title' => 'My Book']);
+Route::get('/libraries', function () {
+    return view('libraries', ['title' => 'Libraries']);
 });
 
 Route::get('/browse', function () {

@@ -3,7 +3,9 @@
 
   <section class="bg-white dark:bg-gray-900">
     <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
-      <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Find items in library near you!</h1>
+      <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+        Find items in library near you!
+      </h1>
       
       <div class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
         <!-- Form for searching specific location -->
@@ -19,180 +21,158 @@
 
       <div class="mt-8">
         <!-- Locations Results -->
-        @if (isset($locations))
-          <ul>
-            @foreach ($locations as $location)
-              <li class="mb-4">
-                <h3 class="text-xl font-semibold">{{ $location['name'] }}</h3>
-                <p>{{ $location['formatted_address'] }}</p>
-                <p>Rating: {{ $location['rating'] ?? 'No rating' }}</p>
-                <a href="https://www.google.com/maps?q={{ $location['geometry']['location']['lat'] }},{{ $location['geometry']['location']['lng'] }}" target="_blank" class="text-blue-600">View on Map</a>
-              </li>
-            @endforeach
-          </ul>
-        @endif
+        <div id="locations-results" class="mt-8"></div>
       </div>
       
-      <!-- Google Map Embed (Empty initially) -->
-      <div id="map" style="width: 100%; height: 400px;"></div>
-
+      <!-- Google Map Embed -->
+      <div id="map" style="width: 100%; height: 400px;" class="mt-8"></div>
     </div>
+
+    
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 p-4">
+    @foreach ($books as $book)
+        <div class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <!-- Cover -->
+          <a href="#" class="flex justify-center items-center p-4">
+                    <img class="rounded-t-lg" src="{{ $book['cover_image'] }}" alt="Cover of {{ $book['title'] }}" style="max-width: 100%; height: auto;">
+                </a>
+            <!-- Details -->
+            <div class="px-5 pb-5">
+                <a href="#">
+                    <h4 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+                        <p>{{ $book->title }}</p>
+                    </h4>
+                </a>
+                <p class="text-gray-500 dark:text-gray-400">{{ $book->author }}</p>
+
+            </div>
+        </div>
+    @endforeach
+</div>
   </section>
 
   <script>
-    // Fungsi untuk mendapatkan lokasi pengguna
-    document.getElementById('searchNearby').addEventListener('click', function () {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
+    let map;
+    let service;
+    let infowindow;
+    let userMarker;
 
-            // Debug: Tampilkan koordinat di konsol untuk memverifikasi
-            console.log("Latitude: " + lat + ", Longitude: " + lng);
-
-            // Tampilkan lokasi pengguna pada peta
-            displayMap(lat, lng);
-
-            // Kirim permintaan API untuk mencari lokasi terdekat
-            fetchNearbyLibraries(lat, lng);
-        }, function(error) {
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    alert("Permission denied. Please allow location access.");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    alert("Location information is unavailable.");
-                    break;
-                case error.TIMEOUT:
-                    alert("The request to get user location timed out.");
-                    break;
-                default:
-                    alert("An unknown error occurred.");
-                    break;
-            }
-        });
-    } else {
-        alert("Geolocation is not supported by your browser.");
-    }
-});
-
-
-let map; // Variabel global untuk peta
-
-function displayMap(lat, lng) {
-    if (!map) { // Inisialisasi peta hanya jika belum ada
-        map = new google.maps.Map(document.getElementById("map"), {
-            center: { lat: lat, lng: lng },
-            zoom: 12,
-        });
-    } else {
-        map.setCenter({ lat: lat, lng: lng });
+    function initMap() {
+      const defaultLocation = { lat: -6.9147, lng: 107.6098 }; // Bandung as default
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: defaultLocation,
+        zoom: 12,
+      });
     }
 
-    // Marker untuk lokasi pengguna
-    new google.maps.Marker({
-        position: { lat: lat, lng: lng },
-        map: map,
-        title: "You are here!",
-    });
-}
+    document.getElementById('searchNearby').addEventListener('click', function() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
 
-function displayLocationsOnMap(locations) {
-    locations.forEach(location => {
-        // Pastikan lokasi memiliki koordinat yang valid
-        const lat = location.latitude;
-        const lng = location.longitude;
+            // Center map to user's location
+            map.setCenter(pos);
+            map.setZoom(15);
 
-        const marker = new google.maps.Marker({
-            position: { lat: lat, lng: lng },
-            map: map,
-            title: location.name,
-        });
+            // Add marker for user's location
+            if (userMarker) userMarker.setMap(null);
+            userMarker = new google.maps.Marker({
+              position: pos,
+              map: map,
+              title: "Your Location",
+              icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+            });
 
-        const infowindow = new google.maps.InfoWindow({
-            content: `<h3>${location.name}</h3><p>${location.address}</p>`,
-        });
+            // Search nearby libraries and bookstores
+            const request = {
+              location: pos,
+              radius: 4000, // 4 km radius
+              type: ['library', 'book_store']
+            };
 
-        marker.addListener("click", function() {
-            infowindow.open(map, marker);
-        });
-    });
-}
-
-
-    // Fetch user's current location and find nearby places
-    document.getElementById('searchNearby').addEventListener('click', function () {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function(position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        // Debug: Tampilkan koordinat di konsol untuk memverifikasi
-        console.log("Latitude: " + lat + ", Longitude: " + lng);
-
-        // Misalkan kita ingin menampilkan lokasi pada peta menggunakan Google Maps API
-        displayMap(lat, lng);
-        
-        // Kirim permintaan API untuk mencari lokasi terdekat menggunakan lat dan lng
-        fetch(`/search-locations?lat=${lat}&lng=${lng}`)
-          .then(response => response.json())
-          .then(data => {
-            // Tampilkan lokasi di peta atau daftar
-            displayLocationsOnMap(data);
-          })
-          .catch(error => console.error('Error fetching locations:', error));
-      },
-      function(error) {
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            alert("Permission denied. Please allow location access.");
-            break;
-          case error.POSITION_UNAVAILABLE:
-            alert("Location information is unavailable.");
-            break;
-          case error.TIMEOUT:
-            alert("The request to get user location timed out.");
-            break;
-          default:
-            alert("An unknown error occurred.");
-            break;
-        }
-      }
-    );
-  } else {
-    alert("Geolocation is not supported by your browser.");
-  }
-});
-
-
-
-      // Adding markers for libraries/bookstores
-      locations.forEach(location => {
-        new google.maps.Marker({
-          position: {
-            lat: location.geometry.location.lat,
-            lng: location.geometry.location.lng
+            service = new google.maps.places.PlacesService(map);
+            service.nearbySearch(request, (results, status) => {
+              if (status === google.maps.places.PlacesServiceStatus.OK) {
+                displayLocationsOnMap(results);
+                updateLocationList(results);
+              } else {
+                alert("No nearby locations found or an error occurred.");
+              }
+            });
           },
+          (error) => {
+            handleLocationError(error);
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    });
+
+    function displayLocationsOnMap(locations) {
+      locations.forEach(location => {
+        const marker = new google.maps.Marker({
+          position: location.geometry.location,
           map: map,
           title: location.name,
         });
+
+        const infowindow = new google.maps.InfoWindow({
+          content: `<h3>${location.name}</h3><p>${location.vicinity}</p>`,
+        });
+
+        marker.addListener("click", () => infowindow.open(map, marker));
       });
-    
-function fetchNearbyLibraries(lat, lng) {
-    fetch(`/search-locations?lat=${lat}&lng=${lng}`)
-        .then(response => response.json())
-        .then(data => {
-            // Tampilkan lokasi pada peta
-            displayLocationsOnMap(data);
-        })
-        .catch(error => console.error('Error fetching nearby locations:', error));
-}
+    }
 
+    function updateLocationList(locations) {
+      const resultsContainer = document.getElementById('locations-results');
+      resultsContainer.innerHTML = ''; // Clear previous results
 
-    
+      const locationsList = document.createElement('ul');
+      locations.forEach(location => {
+        const li = document.createElement('li');
+        li.className = 'mb-4 p-4 bg-gray-100 rounded-lg';
+        li.innerHTML = `
+          <h3 class="text-xl font-semibold">${location.name}</h3>
+          <p>${location.vicinity}</p>
+          <p>Rating: ${location.rating || 'No rating'}</p>
+          <button onclick="map.setCenter(new google.maps.LatLng(${location.geometry.location.lat()}, ${location.geometry.location.lng()})); map.setZoom(17);" 
+                  class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
+            View on Map
+          </button>
+        `;
+        locationsList.appendChild(li);
+      });
+
+      resultsContainer.appendChild(locationsList);
+    }
+
+    function handleLocationError(error) {
+      let errorMessage = '';
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          errorMessage = "Permission denied. Please allow location access.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMessage = "Location information is unavailable.";
+          break;
+        case error.TIMEOUT:
+          errorMessage = "The request to get user location timed out.";
+          break;
+        default:
+          errorMessage = "An unknown error occurred.";
+          break;
+      }
+      alert(errorMessage);
+    }
   </script>
 
   <!-- Google Maps API Script -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBiSRGSp74RDmzNbf9fJUGzg6iNOu8oVQA&callback=initMap" async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBiSRGSp74RDmzNbf9fJUGzg6iNOu8oVQA&libraries=places&callback=initMap" async defer></script>
 </x-layout>
