@@ -11,7 +11,7 @@
               <x-nav-link href="/" :active="request()->is('/')">Home</x-nav-link>
               <x-nav-link href="/libraries" :active="request()->is('libraries')">Libraries</x-nav-link>
               <x-nav-link href="/browse" :active="request()->is('browse')">Browse Book</x-nav-link>
-              <x-nav-link href="/recommendation" :active="request()->is('recommendation')">About</x-nav-link>
+              <x-nav-link href="/about" :active="request()->is('about')">About</x-nav-link>
               
             <form class="max-w-lg mx-auto">
                 <div class="flex">
@@ -57,9 +57,6 @@
               <p id="province" class="text-sm font-medium text-white">Fetching...</p>
               <p id="city" class="text-xs text-gray-400">Please wait...</p>
             </div>
-
-
-            
 
             <!-- Profile dropdown -->
             <div class="relative ml-3">
