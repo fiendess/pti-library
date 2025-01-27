@@ -27,7 +27,6 @@
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Additional Actions</h3>
       <div class="mt-4 flex gap-4">
         <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Locate this book</button>
-        <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Buy this book</button>
       </div>
     </div>
   </div>

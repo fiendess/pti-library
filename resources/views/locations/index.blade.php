@@ -1,12 +1,4 @@
-<!-- resources/views/locations/index.blade.php -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Locations</title>
-</head>
-<body>
+<x-layout>
     <h1>Search Results for Locations</h1>
 
     @if(session('error'))
@@ -26,5 +18,4 @@
     @else
         <p>No locations found.</p>
     @endif
-</body>
-</html>
+</x-layout>

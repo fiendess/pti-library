@@ -5,6 +5,7 @@ use App\Http\Controllers\BooksController;
 use App\Http\Controllers\LocationsController;
 
 
+
 Route::get('/', [BooksController::class, 'index'])->name('home');
 Route::get('/books-detail/{id}', [BooksController::class, 'show'])->name('books.show');
 

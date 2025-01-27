@@ -50,5 +50,4 @@ class LocationsController extends Controller
         return response()->json(['error' => 'Failed to fetch libraries.'], 500);
     }
 
-    
 }

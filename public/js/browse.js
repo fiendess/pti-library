@@ -43,11 +43,7 @@ document
 function displayBookDetails(book) {
     const bookInfo = book.volumeInfo;
     const bookResults = document.getElementById("bookResults");
-
-    // Misalkan ID buku ada di book.id, sesuaikan dengan struktur data Anda
-    const bookId = book.id; // ID Buku dari API atau database Anda
-
-    // Tentukan URL untuk halaman detail buku
+    const bookId = book.id;
     const bookDetailsURL = `/books-detail/${bookId}`;
 
     bookResults.innerHTML = `
@@ -94,6 +90,9 @@ function displayBookDetails(book) {
 
 async function searchLibrariesNearby(book) {
     try {
+        // Hapus hasil sebelumnya
+        clearPreviousResults();
+
         // Get user's location
         const position = await new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -116,8 +115,17 @@ async function searchLibrariesNearby(book) {
         service = new google.maps.places.PlacesService(map);
         service.nearbySearch(request, (results, status) => {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
-                updateMapAndList(results, book);
+                if (results.length > 0) {
+                    // Tampilkan peta jika ada hasil
+                    showMap();
+                    updateMapAndList(results, book);
+                } else {
+                    // Sembunyikan peta jika tidak ada hasil
+                    hideMap();
+                    alert("No libraries found with this book");
+                }
             } else {
+                hideMap(); // Sembunyikan peta jika ada error
                 alert("No libraries found with this book");
             }
         });
@@ -179,6 +187,26 @@ function updateMapAndList(libraries, book) {
         .join("");
 }
 
-function handleLocationError(error) {
-    // ... (same error handling as previous code)
+function handleLocationError(error) {}
+
+function clearPreviousResults() {
+    // Hapus semua marker dari peta
+    markers.forEach((marker) => marker.setMap(null));
+    markers = [];
+
+    // Hapus hasil library dari daftar
+    const resultsContainer = document.getElementById("locations-results");
+    resultsContainer.innerHTML = "";
+}
+
+function showMap() {
+    const mapContainer = document.getElementById("map-container");
+    mapContainer.classList.remove("hidden"); // Tampilkan peta
+    mapContainer.classList.add("block");
+}
+
+function hideMap() {
+    const mapContainer = document.getElementById("map-container");
+    mapContainer.classList.remove("block");
+    mapContainer.classList.add("hidden"); // Sembunyikan peta
 }

@@ -38,9 +38,10 @@
       </div>
 
       <!-- Map Container -->
-      <div id="map" style="width: 100%; height: 500px;" class="mt-8"></div>
+      <div id="map-container" class="hidden transition duration-500 ease-in-out relative mt-6">
+    <div id="map" class="w-full h-96"></div>
+</div>
     </div>
   </section>
  <script src="{{ asset('js/browse.js') }}"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBiSRGSp74RDmzNbf9fJUGzg6iNOu8oVQA&libraries=places&callback=initMap" async defer></script>
 </x-layout>
