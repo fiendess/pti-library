@@ -75,6 +75,4 @@
 </div>
   </section>
  <script src="{{ asset('js/home.js') }}"></script>
-  <!-- Google Maps API Script -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBiSRGSp74RDmzNbf9fJUGzg6iNOu8oVQA&libraries=places&callback=initMap" async defer></script>
 </x-layout>

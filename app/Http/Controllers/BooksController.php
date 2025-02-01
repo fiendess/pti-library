@@ -22,9 +22,9 @@ class BooksController extends Controller
             
             // Fetch data dari API dengan query pencarian (misalnya 'fiction') dan parameter lainnya
             $response = Http::get($apiUrl, [
-                'q' => 'fiction', // Kata kunci pencarian
-                'key' => config('services.google_books.key'), // Pastikan API Key sudah dikonfigurasi
-                'maxResults' => 40, // Maksimal jumlah buku yang diambil
+                'q' => 'fiction', 
+                'key' => config('services.google_books.key'),
+                'maxResults' => 40, 
             ]);
 
             // Validasi jika respons sukses dan ada data buku
@@ -110,7 +110,7 @@ class BooksController extends Controller
 
         // Ambil query pencarian
         $query = $request->input('query');
-        $apiKey = env('GOOGLE_BOOKS_API_KEY'); // Key untuk Google Books API
+        $apiKey = config('services.google_books.key'); 
 
         // Panggil API Google Books
         $response = Http::get('https://www.googleapis.com/books/v1/volumes', [

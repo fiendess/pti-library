@@ -6,6 +6,7 @@ use App\Http\Controllers\LocationsController;
 
 
 
+
 Route::get('/', [BooksController::class, 'index'])->name('home');
 Route::get('/books-detail/{id}', [BooksController::class, 'show'])->name('books.show');
 
@@ -29,6 +30,5 @@ Route::get('/books-detail', function () {
 Route::get('/search-books', [BooksController::class, 'searchBooks'])->name('search.books');
 Route::get('/search-locations', [LocationsController::class, 'searchLocations'])->name('search.locations');
 Route::get('/find-libraries', [LocationController::class, 'findLibraries'])->name('find.libraries');   
-// Route untuk mencari lokasi berdasarkan koordinat pengguna
 Route::get('/search-locations-nearby', [LocationsController::class, 'searchNearbyLocations']);
 

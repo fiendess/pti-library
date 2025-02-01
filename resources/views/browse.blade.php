@@ -10,17 +10,9 @@
       <!-- Book Search Form -->
       <div class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 mb-8">
         <form id="bookSearchForm" class="flex items-center space-x-2">
-          <input 
-            type="text" 
-            id="bookTitle" 
-            placeholder="Enter book title" 
-            required 
-            class="border p-2 rounded-md w-64"
-          >
-          <button 
-            type="submit" 
-            class="px-4 py-2 bg-purple-600 text-white rounded-md"
-          >
+          <input class="border p-2 rounded-md w-64" type="text" id="bookTitle" placeholder="Enter book title" required>
+          </input>
+          <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md">
             Search Book
           </button>
         </form>
@@ -44,4 +36,5 @@
     </div>
   </section>
  <script src="{{ asset('js/browse.js') }}"></script>
+
 </x-layout>

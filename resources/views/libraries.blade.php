@@ -52,6 +52,5 @@
   </div>
   </section>
  <script src="{{ asset('js/libraries.js') }}"></script>
-<!-- Tambahkan library Geometry API pada Google Maps -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBiSRGSp74RDmzNbf9fJUGzg6iNOu8oVQA&libraries=places,geometry&callback=initMap" async defer></script>
+
 </x-layout>
