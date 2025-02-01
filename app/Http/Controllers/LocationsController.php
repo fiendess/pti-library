@@ -9,26 +9,31 @@ use App\Models\Location;
 class LocationsController extends Controller
 {
     // Method untuk mencari lokasi berdasarkan input
-    public function searchLocations(Request $request)
-    {
-        $request->validate([
-            'location' => 'required|string',
-        ]);
+   public function searchLocations(Request $request)
+{
+    $query = $request->input('location');
 
-        $location = $request->location;
-        $apiKey = env('GOOGLE_MAPS_API_KEY');
-        $response = Http::get("https://maps.googleapis.com/maps/api/place/textsearch/json", [
-            'query' => $location,
-            'key' => $apiKey,
-        ]);
-
-        if ($response->successful()) {
-            $locations = $response->json()['results'];
-            return view('locations.index', compact('locations'));
-        }
-
-        return back()->with('error', 'Failed to fetch locations.');
+    if (!$query) {
+        return response()->json(['error' => 'Location is required.'], 400);
     }
+
+    // Menggunakan Google Places API untuk mencari lokasi perpustakaan
+    $apiKey = env('GOOGLE_MAPS_API_KEY');
+    $response = Http::get("https://maps.googleapis.com/maps/api/place/textsearch/json", [
+        'query' => $query,
+        'type' => 'library|bookstore',
+        'key' => $apiKey
+    ]);
+
+    $data = $response->json();
+
+    if (!isset($data['results'])) {
+        return response()->json(['error' => 'No locations found.'], 404);
+    }
+
+    return response()->json($data['results']);
+}
+
 
     // Method untuk mencari lokasi berdasarkan koordinat pengguna
     public function searchNearbyLocations(Request $request)

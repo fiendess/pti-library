@@ -28,7 +28,8 @@ Route::get('/books-detail', function () {
 });
 
 Route::get('/search-books', [BooksController::class, 'searchBooks'])->name('search.books');
-Route::get('/search-locations', [LocationsController::class, 'searchLocations'])->name('search.locations');
 Route::get('/find-libraries', [LocationController::class, 'findLibraries'])->name('find.libraries');   
+Route::get('/search-locations', [LocationsController::class, 'searchLocations'])->name('search.locations');
 Route::get('/search-locations-nearby', [LocationsController::class, 'searchNearbyLocations']);
+
 

@@ -124,3 +124,67 @@ function fetchDetailedInfo(locations) {
 
     resultsContainer.appendChild(locationsList);
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const searchForm = document.getElementById("searchForm");
+    const searchInput = document.getElementById("locationInput");
+    const resultsContainer = document.getElementById("locations-results-form");
+
+    searchForm.addEventListener("submit", function (event) {
+        event.preventDefault(); // Mencegah reload halaman
+
+        let location = searchInput.value.trim();
+        if (!location) return;
+
+        fetch(`/search-locations?location=${encodeURIComponent(location)}`)
+            .then((response) => response.json())
+            .then((data) => {
+                resultsContainer.innerHTML = "";
+                if (data.error) {
+                    resultsContainer.innerHTML = `<p class="text-red-500">${data.error}</p>`;
+                    return;
+                }
+
+                const locationsList = document.createElement("ul");
+                locationsList.className = "space-y-4";
+
+                data.forEach((place) => {
+                    const li = document.createElement("li");
+                    li.className =
+                        "flex flex-col sm:flex-row items-start space-x-4 p-4 bg-gray-100 rounded-lg shadow-md";
+                    li.innerHTML = `
+                        ${
+                            place.photos
+                                ? `<img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=AIzaSyBiSRGSp74RDmzNbf9fJUGzg6iNOu8oVQA" 
+                                 alt="${place.name}" class="w-32 h-32 object-cover rounded-lg" />`
+                                : `<div class="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">No Image</div>`
+                        }
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold">${place.name}</h3>
+                            <p>${
+                                place.formatted_address ||
+                                "Address not available"
+                            }</p>
+                            <p>Rating: ${place.rating || "No rating"}</p>
+                            <button onclick="map.setCenter(new google.maps.LatLng(${
+                                place.geometry.location.lat
+                            }, ${
+                        place.geometry.location.lng
+                    })); map.setZoom(17);" 
+                                    class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
+                                Get Directions
+                            </button>
+                        </div>
+                    `;
+
+                    locationsList.appendChild(li);
+                });
+
+                resultsContainer.appendChild(locationsList);
+            })
+            .catch((error) => {
+                resultsContainer.innerHTML = `<p class="text-red-500">Error fetching data. Try again later.</p>`;
+                console.error("Error fetching locations:", error);
+            });
+    });
+});
