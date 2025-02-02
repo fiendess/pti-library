@@ -57,7 +57,7 @@
     @foreach ($books as $book)
         <div class="w-full max-w-sm bg-white  dark:border-gray-700">
             <!-- Cover -->
-          <a href="/books-detail/{{ $book->id }}" class="flex justify-center items-center p-4">
+          <a href="/books-detaildb/{{ $book->id }}" class="flex justify-center items-center p-4">
                     <img class="rounded-t-lg" src="{{ $book['cover_image'] }}" alt="Cover of {{ $book['title'] }}" style="max-width: 100%; height: auto;">
                 </a>
             <!-- Details -->

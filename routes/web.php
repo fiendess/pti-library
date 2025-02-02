@@ -27,6 +27,8 @@ Route::get('/books-detail', function () {
     return view('books-detail', ['title' => 'Books Detail']);
 });
 
+Route::get('/books-detaildb/{id}', [BooksController::class, 'showdb']);
+
 Route::get('/search-books', [BooksController::class, 'searchBooks'])->name('search.books');
 Route::get('/find-libraries', [LocationController::class, 'findLibraries'])->name('find.libraries');   
 Route::get('/search-locations', [LocationsController::class, 'searchLocations'])->name('search.locations');

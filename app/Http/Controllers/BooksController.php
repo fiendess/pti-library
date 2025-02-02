@@ -129,5 +129,14 @@ class BooksController extends Controller
         // Jika gagal, tampilkan pesan error
         return back()->with('error', 'Failed to fetch books from Google Books API.');
     }
+
+    public function showdb($id)
+    {
+        // Ambil buku berdasarkan ID
+        $book = Book::findOrFail($id); 
+        
+        // Kirim data buku ke view
+        return view('books-detaildb', compact('book'));
+    }
 }
 
