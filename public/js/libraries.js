@@ -110,10 +110,11 @@ function fetchDetailedInfo(locations) {
 
                 <p>Open Now: ${place.opening_hours?.isOpen() ? "Yes" : "No"}</p>
 
-                <button onclick="map.setCenter(new google.maps.LatLng(${place.geometry.location.lat()}, ${place.geometry.location.lng()})); map.setZoom(17);" 
+                <button onclick="openGoogleMaps(${place.geometry.location.lat()}, ${place.geometry.location.lng()})" 
                         class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
-                  Get Directions
+                Get Directions
                 </button>
+
               </div>
             `;
 
@@ -123,6 +124,11 @@ function fetchDetailedInfo(locations) {
     });
 
     resultsContainer.appendChild(locationsList);
+}
+
+function openGoogleMaps(lat, lng) {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    window.open(url, "_blank");
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -166,14 +172,12 @@ document.addEventListener("DOMContentLoaded", function () {
                                 "Address not available"
                             }</p>
                             <p>Rating: ${place.rating || "No rating"}</p>
-                            <button onclick="map.setCenter(new google.maps.LatLng(${
-                                place.geometry.location.lat
-                            }, ${
-                        place.geometry.location.lng
-                    })); map.setZoom(17);" 
-                                    class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
-                                Get Directions
-                            </button>
+                           <button onclick="openGoogleMaps(${
+                               place.geometry.location.lat
+                           }, ${place.geometry.location.lng})"
+                                class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
+                        Get Directions
+                        </button>
                         </div>
                     `;
 

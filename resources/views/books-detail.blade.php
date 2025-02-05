@@ -23,12 +23,34 @@
       </div>
     </div>
 
-    <div class="mt-6 border-t pt-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Additional Actions</h3>
-      <div class="mt-4 flex gap-4">
-        <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Locate this book</button>
-      </div>
+   <div class="mt-6 border-t pt-4">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Additional Actions</h3>
+    <div class="mt-4 flex gap-4">
+        <button onclick="locateBook('{{ $book->isbn }}')" 
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Locate this book
+        </button>
     </div>
+</div>
+
   </div>
 </div>
+<script>
+function locateBook(isbn) {
+    if (!isbn) {
+        alert("ISBN not available for this book.");
+        return;
+    }
+
+    // Gunakan Google Places API untuk mencari perpustakaan atau toko buku terdekat
+    const query = `bookstore OR library near me with ISBN ${isbn}`;
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+
+    // Buka Google Maps di tab baru
+    window.open(googleMapsUrl, '_blank');
+}
+
+
+</script>
+
 </x-layout>

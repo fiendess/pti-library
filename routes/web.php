@@ -3,9 +3,24 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BooksController;
 use App\Http\Controllers\LocationsController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\UserController;
 
+// register
+Route::get('/register', [RegisterController::class, 'index']);
+Route::post('/register', [RegisterController::class, 'store']);
 
+// login
+Route::get('/login', [LoginController::class, 'index'])->name('login');
+Route::post('/login', [LoginController::class, 'authenticate']);
+Route::post('/logout', [LoginController::class, 'logout']);
 
+// profile
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [UserController::class, 'index'])->name('profile.index');
+    Route::post('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+});
 
 Route::get('/', [BooksController::class, 'index'])->name('home');
 Route::get('/books-detail/{id}', [BooksController::class, 'show'])->name('books.show');
