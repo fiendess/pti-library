@@ -55,4 +55,31 @@ class LocationsController extends Controller
         return response()->json(['error' => 'Failed to fetch libraries.'], 500);
     }
 
+     public function addToFavorites(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'required|string',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'contact_number' => 'nullable|string|max:255',
+            'opening_hours' => 'nullable|string',
+            'website' => 'nullable|string',
+            'type' => 'nullable|string',
+        ]);
+
+        Location::create([
+            'name' => $request->name,
+            'address' => $request->address,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'contact_number' => $request->contact_number ?? 'Not Available',
+            'opening_hours' => $request->opening_hours ?? 'Not Available',
+            'website' => $request->website ?? 'Not Available',
+            'type' => $request->type ?? 'Library',
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
 }

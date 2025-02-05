@@ -38,4 +38,14 @@ class UserController extends Controller
 
         return redirect()->route('profile.index')->with('success', 'Profile updated successfully!');
     }
+
+     public function favoritelibraries()
+    {
+        return view('favorites.libraries');
+    }
+
+    public function favoritebooks()
+    {
+        return view('favorites.books');
+    }
 }

@@ -20,7 +20,10 @@ Route::post('/logout', [LoginController::class, 'logout']);
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [UserController::class, 'index'])->name('profile.index');
     Route::post('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/favorites/libraries', [UserController::class, 'favoritelibraries'])->name('favorites.libraries');
+    Route::get('/favorites/books', [UserController::class, 'favoritebooks'])->name('favorites.books');
 });
+
 
 Route::get('/', [BooksController::class, 'index'])->name('home');
 Route::get('/books-detail/{id}', [BooksController::class, 'show'])->name('books.show');
@@ -48,5 +51,5 @@ Route::get('/search-books', [BooksController::class, 'searchBooks'])->name('sear
 Route::get('/find-libraries', [LocationController::class, 'findLibraries'])->name('find.libraries');   
 Route::get('/search-locations', [LocationsController::class, 'searchLocations'])->name('search.locations');
 Route::get('/search-locations-nearby', [LocationsController::class, 'searchNearbyLocations']);
-
+Route::post('/add-to-favorites', [LocationController::class, 'addToFavorites'])->name('addToFavorites');
 
