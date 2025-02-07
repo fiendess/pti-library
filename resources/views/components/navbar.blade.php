@@ -61,28 +61,19 @@
             <!-- Profile dropdown -->
             <div class="relative ml-3">
               <div>
-                 <button 
-            @click="isOpen = !isOpen" 
-            class="flex items-center text-gray-700 dark:text-white focus:outline-none" 
-            id="user-menu-button" 
-            aria-haspopup="true" 
-            aria-expanded="true">
-            
-            @if(Auth::check() && Auth::user()->avatar) 
-                {{-- Jika user memiliki avatar, tampilkan gambarnya --}}
-                <img class="size-8 rounded-full" src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Profile">
-            @else 
-                {{-- Jika tidak ada avatar, tampilkan inisial nama --}}
-                @php
-                    $initial = strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)); 
-                @endphp
-                <div class="size-8 flex items-center justify-center rounded-full bg-gray-500 text-white text-lg font-bold">
-                    {{ $initial }}
-                </div>
-            @endif
-        </button>
+                 <button  @click="isOpen = !isOpen" class="flex items-center text-gray-700 dark:text-white focus:outline-none" id="user-menu-button" aria-haspopup="true" aria-expanded="true">
+                    @if(Auth::check() && Auth::user()->avatar)             
+                        <img class="size-8 rounded-full" src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Profile">
+                    @else 
+                        @php
+                            $initial = strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)); 
+                        @endphp
+                        <div class="size-8 flex items-center justify-center rounded-full bg-gray-500 text-white text-lg font-bold">
+                            {{ $initial }}
                         </div>
-                        
+                    @endif
+                </button>
+                        </div> 
                         <div 
                   x-show="isOpen"
                   x-transition:enter="transition ease-out duration-100 transform"
@@ -96,9 +87,8 @@
                   aria-orientation="vertical"
                   aria-labelledby="user-menu-button"
                   tabindex="-1">
-                  @auth
-                      <!-- Jika User Sudah Login -->
-                      <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Your Profile</a>
+                  @auth            
+                      <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">My Profile</a>
                       <form action="/logout" method="post">
                           @csrf
                           <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
@@ -106,7 +96,6 @@
                           </button>
                       </form>
                   @else
-                      <!-- Jika User Belum Login -->
                       <a href="/login" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Login</a>
                       <a href="/register" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Register</a>
                   @endauth

@@ -38,6 +38,11 @@ return [
     'google' => [
     'google_books' => [
         'key' => env('GOOGLE_BOOKS_API_KEY')
-    ]
-]
+    ],
+],
+
+'google_maps' => [
+    'key' => env('GOOGLE_MAPS_API_KEY'),
+],
+
 ];

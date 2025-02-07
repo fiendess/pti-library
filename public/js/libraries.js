@@ -140,6 +140,17 @@ function addToFavorites(
     website,
     type
 ) {
+    console.log("Sending to backend:", {
+        name,
+        address,
+        lat,
+        lng,
+        contact,
+        openingHours,
+        website,
+        type,
+    });
+
     fetch("/add-to-favorites", {
         method: "POST",
         headers: {
@@ -161,13 +172,13 @@ function addToFavorites(
     })
         .then((response) => response.json())
         .then((data) => {
-            if (data.success) {
-                alert("Added to favorites successfully!");
-            } else {
-                alert("Failed to add to favorites.");
-            }
+            console.log("Response from backend:", data);
+            alert(data.message);
         })
-        .catch((error) => console.error("Error:", error));
+        .catch((error) => {
+            console.error("Error:", error);
+            alert("Error: " + error.message);
+        });
 }
 
 function openGoogleMaps(lat, lng) {
@@ -222,6 +233,12 @@ document.addEventListener("DOMContentLoaded", function () {
                                 class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
                         Get Directions
                         </button>
+
+                    <button onclick="addToFavorites('${place.place_id}')"
+                            class="mt-2 px-4 py-2 bg-green-600 text-white rounded-md">
+                    Add to Favorites
+                    </button>
+
                         </div>
                     `;
 

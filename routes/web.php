@@ -51,5 +51,5 @@ Route::get('/search-books', [BooksController::class, 'searchBooks'])->name('sear
 Route::get('/find-libraries', [LocationController::class, 'findLibraries'])->name('find.libraries');   
 Route::get('/search-locations', [LocationsController::class, 'searchLocations'])->name('search.locations');
 Route::get('/search-locations-nearby', [LocationsController::class, 'searchNearbyLocations']);
-Route::post('/add-to-favorites', [LocationController::class, 'addToFavorites'])->name('addToFavorites');
+Route::post('/add-to-favorites', [LocationsController::class, 'addToFavorites']);
 
