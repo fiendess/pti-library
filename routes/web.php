@@ -48,7 +48,7 @@ Route::get('/books-detail', function () {
 Route::get('/books-detaildb/{id}', [BooksController::class, 'showdb']);
 
 Route::get('/search-books', [BooksController::class, 'searchBooks'])->name('search.books');
-Route::get('/find-libraries', [LocationController::class, 'findLibraries'])->name('find.libraries');   
+Route::get('/find-libraries', [LocationsController::class, 'findLibraries'])->name('find.libraries');   
 Route::get('/search-locations', [LocationsController::class, 'searchLocations'])->name('search.locations');
 Route::get('/search-locations-nearby', [LocationsController::class, 'searchNearbyLocations']);
 Route::post('/add-to-favorites', [LocationsController::class, 'addToFavorites']);

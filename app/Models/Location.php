@@ -9,6 +9,12 @@ class Location extends Model
 {
     use HasFactory;
 
+    public function usersWhoFavorited()
+{
+    return $this->belongsToMany(User::class, 'user_favorite_libraries');
+}
+
+
     protected $fillable = [
         'name', 
         'address',
@@ -18,5 +24,10 @@ class Location extends Model
         'opening_hours',
         'website', 
         'type', 
+    ];
+
+     protected $casts = [
+        'contact_number' => 'array', // Otomatis diubah ke JSON
+        'opening_hours' => 'array',  // Otomatis diubah ke JSON
     ];
 }

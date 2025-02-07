@@ -46,4 +46,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    protected $casts = [
+    'favourite_library' => 'array',
+];
+
+    public function favoriteLibraries()
+    {
+        return $this->belongsToMany(Location::class, 'user_favorite_libraries');
+    }
+
 }

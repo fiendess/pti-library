@@ -140,15 +140,21 @@ function addToFavorites(
     website,
     type
 ) {
+    // Pastikan contact_number dan opening_hours berupa array JSON
+    let contactJson = contact ? JSON.stringify([contact]) : null;
+    let openingHoursJson = openingHours
+        ? JSON.stringify(openingHours.split(", "))
+        : null;
+
     console.log("Sending to backend:", {
         name,
         address,
-        lat,
-        lng,
-        contact,
-        openingHours,
-        website,
-        type,
+        latitude: lat,
+        longitude: lng,
+        contact_number: contactJson,
+        opening_hours: openingHoursJson,
+        website: website || null,
+        type: type || "Library",
     });
 
     fetch("/add-to-favorites", {
@@ -164,20 +170,24 @@ function addToFavorites(
             address: address,
             latitude: lat,
             longitude: lng,
-            contact_number: contact || "Not Available",
-            opening_hours: openingHours || "Not Available",
-            website: website || "Not Available",
+            contact_number: contactJson, // JSON
+            opening_hours: openingHoursJson, // JSON
+            website: website || null,
             type: type || "Library",
         }),
     })
         .then((response) => response.json())
         .then((data) => {
             console.log("Response from backend:", data);
-            alert(data.message);
+            if (data.success) {
+                alert("✅ " + data.message);
+            } else {
+                alert("❌ " + data.message + " | " + data.error);
+            }
         })
         .catch((error) => {
             console.error("Error:", error);
-            alert("Error: " + error.message);
+            alert("⚠️ Error: " + error.message);
         });
 }
 
@@ -197,59 +207,96 @@ document.addEventListener("DOMContentLoaded", function () {
         let location = searchInput.value.trim();
         if (!location) return;
 
-        fetch(`/search-locations?location=${encodeURIComponent(location)}`)
-            .then((response) => response.json())
-            .then((data) => {
-                resultsContainer.innerHTML = "";
-                if (data.error) {
-                    resultsContainer.innerHTML = `<p class="text-red-500">${data.error}</p>`;
-                    return;
-                }
+        const request = {
+            query: location,
+            fields: ["place_id", "name", "formatted_address", "geometry"],
+        };
 
-                const locationsList = document.createElement("ul");
-                locationsList.className = "space-y-4";
+        service = new google.maps.places.PlacesService(map);
+        service.textSearch(request, (results, status) => {
+            resultsContainer.innerHTML = ""; // Reset hasil sebelumnya
 
-                data.forEach((place) => {
-                    const li = document.createElement("li");
-                    li.className =
-                        "flex flex-col sm:flex-row items-start space-x-4 p-4 bg-gray-100 rounded-lg shadow-md";
-                    li.innerHTML = `
-                        ${
-                            place.photos
-                                ? `<img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=AIzaSyBiSRGSp74RDmzNbf9fJUGzg6iNOu8oVQA" 
-                                 alt="${place.name}" class="w-32 h-32 object-cover rounded-lg" />`
-                                : `<div class="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">No Image</div>`
-                        }
-                        <div class="flex-1">
-                            <h3 class="text-xl font-semibold">${place.name}</h3>
-                            <p>${
-                                place.formatted_address ||
-                                "Address not available"
-                            }</p>
-                            <p>Rating: ${place.rating || "No rating"}</p>
-                           <button onclick="openGoogleMaps(${
-                               place.geometry.location.lat
-                           }, ${place.geometry.location.lng})"
-                                class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
-                        Get Directions
-                        </button>
+            if (
+                status !== google.maps.places.PlacesServiceStatus.OK ||
+                !results.length
+            ) {
+                resultsContainer.innerHTML = `<p class="text-red-500">No locations found.</p>`;
+                return;
+            }
 
-                    <button onclick="addToFavorites('${place.place_id}')"
-                            class="mt-2 px-4 py-2 bg-green-600 text-white rounded-md">
-                    Add to Favorites
-                    </button>
+            const locationsList = document.createElement("ul");
+            locationsList.className = "space-y-4";
 
-                        </div>
-                    `;
+            results.forEach((place) => {
+                // Ambil detail tambahan
+                const requestDetails = { placeId: place.place_id };
 
-                    locationsList.appendChild(li);
+                service.getDetails(requestDetails, (placeDetails, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        const contact =
+                            placeDetails.formatted_phone_number ||
+                            "Not Available";
+                        const openingHours =
+                            placeDetails.opening_hours?.weekday_text?.join(
+                                ", "
+                            ) || "Not Available";
+                        const website = placeDetails.website || "Not Available";
+                        const type = placeDetails.types
+                            ? placeDetails.types[0]
+                            : "Library";
+
+                        const li = document.createElement("li");
+                        li.className =
+                            "flex flex-col sm:flex-row items-start space-x-4 p-4 bg-gray-100 rounded-lg shadow-md";
+
+                        li.innerHTML = `
+                            ${
+                                placeDetails.photos
+                                    ? `<img src="${placeDetails.photos[0].getUrl(
+                                          { maxWidth: 120 }
+                                      )}" 
+                                    alt="${
+                                        placeDetails.name
+                                    }" class="w-32 h-32 object-cover rounded-lg" />`
+                                    : `<div class="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">No Image</div>`
+                            }
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold">${
+                                    placeDetails.name
+                                }</h3>
+                                <p>${
+                                    placeDetails.formatted_address ||
+                                    "Address not available"
+                                }</p>
+                                <p>Rating: ${
+                                    placeDetails.rating || "No rating"
+                                }</p>
+                                <p>Contact: ${contact}</p>
+                                <p>Opening Hours: ${openingHours}</p>
+                                <p>Website: <a href="${website}" target="_blank">${website}</a></p>
+
+                                <button onclick="openGoogleMaps(${placeDetails.geometry.location.lat()}, ${placeDetails.geometry.location.lng()})" 
+                                    class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
+                                    Get Directions
+                                </button>
+
+                                <button onclick="addToFavorites('${
+                                    placeDetails.name
+                                }', '${placeDetails.formatted_address}', 
+                                ${placeDetails.geometry.location.lat()}, ${placeDetails.geometry.location.lng()}, 
+                                '${contact}', '${openingHours}', '${website}', '${type}')" 
+                                    class="mt-2 px-4 py-2 bg-green-600 text-white rounded-md">
+                                    Add to Favorites
+                                </button>
+                            </div>
+                        `;
+
+                        locationsList.appendChild(li);
+                    }
                 });
-
-                resultsContainer.appendChild(locationsList);
-            })
-            .catch((error) => {
-                resultsContainer.innerHTML = `<p class="text-red-500">Error fetching data. Try again later.</p>`;
-                console.error("Error fetching locations:", error);
             });
+
+            resultsContainer.appendChild(locationsList);
+        });
     });
 });
