@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        @vite('resources/css/app.css')
+           @if (app()->environment('local'))
+    @vite('resources/css/app.css')
+    @vite('resources/js/app.js')
+    @else
+        <link rel="stylesheet" href="{{ asset('build/assets/app.css') }}">
+        <script src="{{ asset('build/assets/app.js') }}" defer></script>
+    @endif
+
+
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@3.0.0/dist/flowbite.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.5.3/flowbite.min.js"></script>
-
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Document</title>
 </head>
 <body>
@@ -31,7 +38,7 @@
                         @endforeach
                     </ul>
                 </div>
-            @endif
+                @endif
 
                   <div>
                       <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
@@ -50,9 +57,10 @@
                   <div class="flex items-center justify-between">
                       <a href="#" class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">Forgot password?</a>
                   </div>
-                  <button type="submit" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                   <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md">
                       Sign in
                   </button>
+                  
                   <p class="text-sm font-light text-gray-500 dark:text-gray-400">
                       Don’t have an account yet? <a href="/register" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</a>
                   </p>

@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @if (app()->environment('local'))
     @vite('resources/css/app.css')
+    @vite('resources/js/app.js')
+    @else
+        <link rel="stylesheet" href="{{ asset('build/assets/app.css') }}">
+        <script src="{{ asset('build/assets/app.js') }}" defer></script>
+    @endif
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@3.0.0/dist/flowbite.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.5.3/flowbite.min.js"></script>
-
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Home</title>
 </head>
 <body class="h-full">
 <div class="min-h-full">
     <x-navbar></x-navbar>
-
  <x-header>
   
  </x-header>
@@ -27,9 +31,9 @@
     </div>
   </main>
 </div>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places,geometry&callback=initMap"></script>
 </body>
 <!-- footer -->
- 
 
 <footer class="bg-white dark:bg-gray-900">
     <div class="mx-auto w-full max-w-screen-xl">
@@ -82,26 +86,10 @@
                 </li>
             </ul>
         </div>
-        <div>
-            <h2 class="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Download</h2>
-            <ul class="text-gray-500 dark:text-gray-400 font-medium">
-                <li class="mb-4">
-                    <a href="#" class="hover:underline">iOS</a>
-                </li>
-                <li class="mb-4">
-                    <a href="#" class="hover:underline">Android</a>
-                </li>
-                <li class="mb-4">
-                    <a href="#" class="hover:underline">Windows</a>
-                </li>
-                <li class="mb-4">
-                    <a href="#" class="hover:underline">MacOS</a>
-                </li>
-            </ul>
-        </div>
+    
     </div>
     <div class="px-4 py-6 bg-gray-100 dark:bg-gray-700 md:flex md:items-center md:justify-between">
-        <span class="text-sm text-gray-500 dark:text-gray-300 sm:text-center">© 2023 <a href="https://flowbite.com/">Flowbite™</a>. All Rights Reserved.
+        <span class="text-sm text-gray-500 dark:text-gray-300 sm:text-center">© 2025 <a href="https://flowbite.com/">LibFinder™</a>. All Rights Reserved.
         </span>
         <div class="flex mt-4 sm:justify-center md:mt-0 space-x-5 rtl:space-x-reverse">
             <a href="#" class="text-gray-400 hover:text-gray-900 dark:hover:text-white">
@@ -141,7 +129,7 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const provinceElement = document.getElementById("province");
-    const countryElement = document.getElementById("city"); // Diubah jadi elemen untuk negara
+    const countryElement = document.getElementById("city");
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -149,15 +137,13 @@
           const { latitude, longitude } = position.coords;
 
           try {
-            // Menggunakan API Geocoding Google Maps
             const response = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyBiSRGSp74RDmzNbf9fJUGzg6iNOu8oVQA`
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key={{ config('services.google_maps.key') }}`
             );
 
             if (response.ok) {
               const data = await response.json();
               if (data.results.length > 0) {
-                // Cari komponen alamat yang relevan
                 const addressComponents = data.results[0].address_components;
                 const province = addressComponents.find(component =>
                   component.types.includes("administrative_area_level_1")
@@ -166,7 +152,6 @@
                   component.types.includes("country")
                 )?.long_name || "Unknown Country";
 
-                // Update UI
                 provinceElement.textContent = province;
                 countryElement.textContent = country;
               } else {
@@ -194,6 +179,4 @@
     }
   });
 </script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6FKD_YbZCJxJSKNxypSF9bRYuVo6DSK4&libraries=places,geometry&callback=initMap"></script>
-
 </html>

@@ -1,64 +1,38 @@
 let map;
 let service;
-let infowindow;
-let userMarker;
+const bandungCenter = { lat: -6.9147, lng: 107.6098 };
+let userLocation = bandungCenter;
 
 function initMap() {
-    const defaultLocation = { lat: -6.9147, lng: 107.6098 }; // Bandung as default
     map = new google.maps.Map(document.getElementById("map"), {
-        center: defaultLocation,
+        center: bandungCenter,
         zoom: 12,
     });
 }
 
 document.getElementById("searchNearby").addEventListener("click", function () {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const pos = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                };
+    map.setCenter(bandungCenter);
+    map.setZoom(14);
 
-                // Center map to user's location
-                map.setCenter(pos);
-                map.setZoom(15);
+    const request = {
+        query: "perpustakaan atau library",
+        location: bandungCenter,
+        radius: 10000,
+    };
 
-                // Add marker for user's location
-                if (userMarker) userMarker.setMap(null);
-                userMarker = new google.maps.Marker({
-                    position: pos,
-                    map: map,
-                    title: "Your Location",
-                    icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                });
-
-                // Search nearby libraries and bookstores
-                const request = {
-                    location: pos,
-                    radius: 4000, // 4 km radius
-                    type: ["library", "book_store"],
-                };
-
-                service = new google.maps.places.PlacesService(map);
-                service.nearbySearch(request, (results, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        displayLocationsOnMap(results);
-                        updateLocationList(results);
-                    } else {
-                        alert(
-                            "No nearby locations found or an error occurred."
-                        );
-                    }
-                });
-            },
-            (error) => {
-                handleLocationError(error);
+    service = new google.maps.places.PlacesService(map);
+    service.textSearch(request, (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+            if (results.length > 0) {
+                displayLocationsOnMap(results);
+                fetchDetailedInfo(results);
+            } else {
+                alert("No libraries or bookstores found nearby.");
             }
-        );
-    } else {
-        alert("Geolocation is not supported by this browser.");
-    }
+        } else {
+            alert("An error occurred while searching for locations.");
+        }
+    });
 });
 
 function displayLocationsOnMap(locations) {
@@ -77,44 +51,75 @@ function displayLocationsOnMap(locations) {
     });
 }
 
-function updateLocationList(locations) {
+function fetchDetailedInfo(locations) {
     const resultsContainer = document.getElementById("locations-results");
-    resultsContainer.innerHTML = ""; // Clear previous results
+    resultsContainer.innerHTML = "";
 
     const locationsList = document.createElement("ul");
+
     locations.forEach((location) => {
-        const li = document.createElement("li");
-        li.className = "mb-4 p-4 bg-gray-100 rounded-lg";
-        li.innerHTML = `
-          <h3 class="text-xl font-semibold">${location.name}</h3>
-          <p>${location.vicinity}</p>
-          <p>Rating: ${location.rating || "No rating"}</p>
-          <button onclick="map.setCenter(new google.maps.LatLng(${location.geometry.location.lat()}, ${location.geometry.location.lng()})); map.setZoom(17);" 
-                  class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
-            View on Map
-          </button>
-        `;
-        locationsList.appendChild(li);
+        const request = { placeId: location.place_id };
+
+        service.getDetails(request, (place, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                const distance =
+                    google.maps.geometry.spherical.computeDistanceBetween(
+                        new google.maps.LatLng(
+                            userLocation.lat,
+                            userLocation.lng
+                        ),
+                        place.geometry.location
+                    );
+
+                const distanceKm = (distance / 1000).toFixed(1);
+
+                const contact = place.formatted_phone_number || "Not Available";
+                const openingHours =
+                    place.opening_hours?.weekday_text?.join(", ") ||
+                    "Not Available";
+                const website = place.website || "Not Available";
+                const type = place.types ? place.types[0] : "Library";
+
+                const li = document.createElement("li");
+                li.className =
+                    "flex flex-col sm:flex-row items-start space-x-4 mb-4 p-4 bg-gray-100 rounded-lg relative";
+                li.innerHTML = `
+                  ${
+                      place.photos
+                          ? `<img src="${place.photos[0].getUrl({
+                                maxWidth: 120,
+                            })}" alt="${place.name}" 
+                         class="w-32 h-32 object-cover rounded-lg" />`
+                          : `<div class="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">No Image</div>`
+                  }
+
+                  <div class="flex-1">
+                    <h3 class="text-xl font-semibold">${place.name}</h3>
+                    <p>${place.formatted_address || "Address not available"}</p>
+                    <p>Rating: ${place.rating || "No rating"}</p>
+                    <p>Contact: ${contact}</p>
+                    <p>Opening Hours: ${openingHours}</p>
+                    <p>Website: <a href="${website}" target="_blank">${website}</a></p>
+
+                    <div class="flex items-center space-x-2 mt-2">
+                        <p>${distanceKm} kilometers from your current location.</p>
+                    </div>
+                    <button onclick="openGoogleMaps(${place.geometry.location.lat()}, ${place.geometry.location.lng()})" 
+                        class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
+                        Get Directions
+                    </button>
+                  </div>
+                `;
+
+                locationsList.appendChild(li);
+            }
+        });
     });
 
     resultsContainer.appendChild(locationsList);
 }
 
-function handleLocationError(error) {
-    let errorMessage = "";
-    switch (error.code) {
-        case error.PERMISSION_DENIED:
-            errorMessage = "Permission denied. Please allow location access.";
-            break;
-        case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location information is unavailable.";
-            break;
-        case error.TIMEOUT:
-            errorMessage = "The request to get user location timed out.";
-            break;
-        default:
-            errorMessage = "An unknown error occurred.";
-            break;
-    }
-    alert(errorMessage);
+function openGoogleMaps(lat, lng) {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    window.open(url, "_blank");
 }

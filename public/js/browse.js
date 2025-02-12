@@ -1,43 +1,21 @@
-let map;
-let service;
-let markers = [];
 const googleBooksAPI = "https://www.googleapis.com/books/v1/volumes";
 
-function initMap() {
-    map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: -6.9147, lng: 107.6098 },
-        zoom: 12,
-    });
-}
-
-// Book Search Handler
 document
     .getElementById("bookSearchForm")
     .addEventListener("submit", async (e) => {
         e.preventDefault();
         const bookTitle = document.getElementById("bookTitle").value;
+        const bookResponse = await fetch(
+            `${googleBooksAPI}?q=${encodeURIComponent(bookTitle)}`
+        );
+        const bookData = await bookResponse.json();
 
-        try {
-            // 1. Search Book using Google Books API
-            const bookResponse = await fetch(
-                `${googleBooksAPI}?q=${encodeURIComponent(bookTitle)}`
-            );
-            const bookData = await bookResponse.json();
-
-            if (!bookData.items || bookData.items.length === 0) {
-                alert("No books found!");
-                return;
-            }
-
-            // Display Book Details
-            displayBookDetails(bookData.items[0]);
-
-            // 2. Search Libraries with Place API
-            searchLibrariesNearby(bookData.items[0]);
-        } catch (error) {
-            console.error("Error:", error);
-            alert("Error searching for books");
+        if (!bookData.items || bookData.items.length === 0) {
+            alert("No books found!");
+            return;
         }
+
+        displayBookDetails(bookData.items[0]);
     });
 
 function displayBookDetails(book) {
@@ -48,7 +26,7 @@ function displayBookDetails(book) {
 
     bookResults.innerHTML = `
         <a href="${bookDetailsURL}" class="block bg-white p-6 rounded-lg shadow-lg flex flex-col md:flex-row space-x-4 relative hover:shadow-xl transition">
-          <!-- Gambar Buku -->
+          <!-- Books Image  -->
           ${
               bookInfo.imageLinks
                   ? `<img src="${bookInfo.imageLinks.thumbnail}" 
@@ -58,8 +36,7 @@ function displayBookDetails(book) {
                   No Image
                 </div>`
           }
-
-          <!-- Informasi Buku -->
+          <!-- Books Info -->
           <div class="flex-1">
             <h2 class="text-2xl font-bold mb-4">${bookInfo.title}</h2>
             <ul class="space-y-2">
@@ -86,127 +63,4 @@ function displayBookDetails(book) {
           </div>
         </a>
       `;
-}
-
-async function searchLibrariesNearby(book) {
-    try {
-        // Hapus hasil sebelumnya
-        clearPreviousResults();
-
-        // Get user's location
-        const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
-        });
-
-        const pos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-        };
-
-        // Configure Places API request
-        const request = {
-            location: pos,
-            radius: 8000,
-            type: ["library", "book_store"],
-            keyword: `"${book.volumeInfo.title}" book`, // Search libraries with book title
-        };
-
-        // Search libraries
-        service = new google.maps.places.PlacesService(map);
-        service.nearbySearch(request, (results, status) => {
-            if (status === google.maps.places.PlacesServiceStatus.OK) {
-                if (results.length > 0) {
-                    // Tampilkan peta jika ada hasil
-                    showMap();
-                    updateMapAndList(results, book);
-                } else {
-                    // Sembunyikan peta jika tidak ada hasil
-                    hideMap();
-                    alert("No libraries found with this book");
-                }
-            } else {
-                hideMap(); // Sembunyikan peta jika ada error
-                alert("No libraries found with this book");
-            }
-        });
-    } catch (error) {
-        handleLocationError(error);
-    }
-}
-
-function updateMapAndList(libraries, book) {
-    // Clear previous markers
-    markers.forEach((marker) => marker.setMap(null));
-    markers = [];
-
-    // Update Map
-    libraries.forEach((library) => {
-        const marker = new google.maps.Marker({
-            position: library.geometry.location,
-            map: map,
-            title: `${library.name} - ${book.volumeInfo.title}`,
-            icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-        });
-
-        const infowindow = new google.maps.InfoWindow({
-            content: `
-            <div class="p-2">
-              <h3 class="font-bold">${library.name}</h3>
-              <p>${library.vicinity}</p>
-              <p class="mt-2 text-sm">
-                <span class="font-semibold">Book Available:</span> 
-                ${book.volumeInfo.title}
-              </p>
-            </div>
-          `,
-        });
-
-        marker.addListener("click", () => infowindow.open(map, marker));
-        markers.push(marker);
-    });
-
-    // Update List
-    const resultsContainer = document.getElementById("locations-results");
-    resultsContainer.innerHTML = libraries
-        .map(
-            (library) => `
-        <div class="p-4 mb-4 bg-white rounded-lg shadow">
-          <h3 class="text-xl font-semibold">${library.name}</h3>
-          <p class="text-gray-600">${library.vicinity}</p>
-          <div class="mt-2">
-            <button 
-              onclick="map.panTo(new google.maps.LatLng(${library.geometry.location.lat()}, ${library.geometry.location.lng()})); map.setZoom(17);" 
-              class="px-3 py-1 bg-blue-500 text-white rounded"
-            >
-              View on Map
-            </button>
-          </div>
-        </div>
-      `
-        )
-        .join("");
-}
-
-function handleLocationError(error) {}
-
-function clearPreviousResults() {
-    // Hapus semua marker dari peta
-    markers.forEach((marker) => marker.setMap(null));
-    markers = [];
-
-    // Hapus hasil library dari daftar
-    const resultsContainer = document.getElementById("locations-results");
-    resultsContainer.innerHTML = "";
-}
-
-function showMap() {
-    const mapContainer = document.getElementById("map-container");
-    mapContainer.classList.remove("hidden"); // Tampilkan peta
-    mapContainer.classList.add("block");
-}
-
-function hideMap() {
-    const mapContainer = document.getElementById("map-container");
-    mapContainer.classList.remove("block");
-    mapContainer.classList.add("hidden"); // Sembunyikan peta
 }

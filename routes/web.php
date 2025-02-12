@@ -1,11 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\BooksController;
 use App\Http\Controllers\LocationsController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WishlistController;
+
 
 // register
 Route::get('/register', [RegisterController::class, 'index']);
@@ -24,10 +27,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/favorites/books', [UserController::class, 'favoritebooks'])->name('favorites.books');
 });
 
-
 Route::get('/', [BooksController::class, 'index'])->name('home');
 Route::get('/books-detail/{id}', [BooksController::class, 'show'])->name('books.show');
-
 
 Route::get('/libraries', function () {
     return view('libraries', ['title' => 'Libraries']);
@@ -45,11 +46,14 @@ Route::get('/books-detail', function () {
     return view('books-detail', ['title' => 'Books Detail']);
 });
 
-Route::get('/books-detaildb/{id}', [BooksController::class, 'showdb']);
+Route::middleware('auth')->group(function () {
+    Route::post('/wishlist/add', [WishlistController::class, 'addToWishlist']);
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.get');
+    Route::delete('/wishlist/remove/{book_id}', [WishlistController::class, 'removeFromWishlist'])->name('wishlist.remove');
+});
 
+Route::get('/books-detaildb/{id}', [BooksController::class, 'showdb']);
 Route::get('/search-books', [BooksController::class, 'searchBooks'])->name('search.books');
 Route::get('/find-libraries', [LocationsController::class, 'findLibraries'])->name('find.libraries');   
 Route::get('/search-locations', [LocationsController::class, 'searchLocations'])->name('search.locations');
-Route::get('/search-locations-nearby', [LocationsController::class, 'searchNearbyLocations']);
 Route::post('/add-to-favorites', [LocationsController::class, 'addToFavorites']);
-

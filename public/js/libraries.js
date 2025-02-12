@@ -4,58 +4,15 @@ const bandungCenter = { lat: -6.9147, lng: 107.6098 };
 let userLocation = bandungCenter;
 
 function initMap() {
-    // Inisialisasi peta
     map = new google.maps.Map(document.getElementById("map"), {
         center: bandungCenter,
         zoom: 12,
     });
 }
 
-document.getElementById("searchNearby").addEventListener("click", function () {
-    // Reset peta ke tengah Kota Bandung
-    map.setCenter(bandungCenter);
-    map.setZoom(14);
-
-    const request = {
-        query: "perpustakaan atau library",
-        location: bandungCenter,
-        radius: 10000,
-    };
-
-    service = new google.maps.places.PlacesService(map);
-    service.textSearch(request, (results, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-            if (results.length > 0) {
-                displayLocationsOnMap(results);
-                fetchDetailedInfo(results);
-            } else {
-                alert("No libraries or bookstores found nearby.");
-            }
-        } else {
-            alert("An error occurred while searching for locations.");
-        }
-    });
-});
-
-function displayLocationsOnMap(locations) {
-    locations.forEach((location) => {
-        const marker = new google.maps.Marker({
-            position: location.geometry.location,
-            map: map,
-            title: location.name,
-        });
-
-        const infowindow = new google.maps.InfoWindow({
-            content: `<h3>${location.name}</h3><p>${location.vicinity}</p>`,
-        });
-
-        marker.addListener("click", () => infowindow.open(map, marker));
-    });
-}
-
 function fetchDetailedInfo(locations) {
     const resultsContainer = document.getElementById("locations-results");
-    resultsContainer.innerHTML = ""; // Bersihkan hasil sebelumnya
+    resultsContainer.innerHTML = "";
 
     const locationsList = document.createElement("ul");
 
@@ -74,7 +31,6 @@ function fetchDetailedInfo(locations) {
                     );
 
                 const distanceKm = (distance / 1000).toFixed(1);
-
                 const contact = place.formatted_phone_number || "Not Available";
                 const openingHours =
                     place.opening_hours?.weekday_text?.join(", ") ||
@@ -107,17 +63,19 @@ function fetchDetailedInfo(locations) {
                         <p>${distanceKm} kilometers from your current location.</p>
                     </div>
 
-                    <button onclick="openGoogleMaps(${place.geometry.location.lat()}, ${place.geometry.location.lng()})" 
-                            class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
-                        Get Directions
-                    </button>
+                    <div class="flex space-x-2 mt-2">
+                        <button onclick="openGoogleMaps(${place.geometry.location.lat()}, ${place.geometry.location.lng()})" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md">
+                            Get Directions
+                        </button>
 
-                    <button onclick="addToFavorites('${place.name}', '${
-                    place.formatted_address
-                }', ${place.geometry.location.lat()}, ${place.geometry.location.lng()}, '${contact}', '${openingHours}', '${website}', '${type}')" 
-                            class="mt-2 px-4 py-2 bg-green-600 text-white rounded-md">
-                        Add to Favorites
-                    </button>
+                        <button onclick="viewOnMap(${place.geometry.location.lat()}, ${place.geometry.location.lng()}, '${
+                    place.name
+                }')" 
+                                class="px-4 py-2 bg-green-600 text-white rounded-md">
+                            View on Map
+                        </button>
+                    </div>
                   </div>
                 `;
 
@@ -125,70 +83,7 @@ function fetchDetailedInfo(locations) {
             }
         });
     });
-
     resultsContainer.appendChild(locationsList);
-}
-
-// Fungsi untuk menambahkan lokasi ke favorit (tabel 'location')
-function addToFavorites(
-    name,
-    address,
-    lat,
-    lng,
-    contact,
-    openingHours,
-    website,
-    type
-) {
-    // Pastikan contact_number dan opening_hours berupa array JSON
-    let contactJson = contact ? JSON.stringify([contact]) : null;
-    let openingHoursJson = openingHours
-        ? JSON.stringify(openingHours.split(", "))
-        : null;
-
-    console.log("Sending to backend:", {
-        name,
-        address,
-        latitude: lat,
-        longitude: lng,
-        contact_number: contactJson,
-        opening_hours: openingHoursJson,
-        website: website || null,
-        type: type || "Library",
-    });
-
-    fetch("/add-to-favorites", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document
-                .querySelector('meta[name="csrf-token"]')
-                .getAttribute("content"),
-        },
-        body: JSON.stringify({
-            name: name,
-            address: address,
-            latitude: lat,
-            longitude: lng,
-            contact_number: contactJson, // JSON
-            opening_hours: openingHoursJson, // JSON
-            website: website || null,
-            type: type || "Library",
-        }),
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Response from backend:", data);
-            if (data.success) {
-                alert("✅ " + data.message);
-            } else {
-                alert("❌ " + data.message + " | " + data.error);
-            }
-        })
-        .catch((error) => {
-            console.error("Error:", error);
-            alert("⚠️ Error: " + error.message);
-        });
 }
 
 function openGoogleMaps(lat, lng) {
@@ -202,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultsContainer = document.getElementById("locations-results-form");
 
     searchForm.addEventListener("submit", function (event) {
-        event.preventDefault(); // Mencegah reload halaman
+        event.preventDefault();
 
         let location = searchInput.value.trim();
         if (!location) return;
@@ -214,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         service = new google.maps.places.PlacesService(map);
         service.textSearch(request, (results, status) => {
-            resultsContainer.innerHTML = ""; // Reset hasil sebelumnya
+            resultsContainer.innerHTML = "";
 
             if (
                 status !== google.maps.places.PlacesServiceStatus.OK ||
@@ -228,7 +123,6 @@ document.addEventListener("DOMContentLoaded", function () {
             locationsList.className = "space-y-4";
 
             results.forEach((place) => {
-                // Ambil detail tambahan
                 const requestDetails = { placeId: place.place_id };
 
                 service.getDetails(requestDetails, (placeDetails, status) => {
@@ -248,7 +142,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         const li = document.createElement("li");
                         li.className =
                             "flex flex-col sm:flex-row items-start space-x-4 p-4 bg-gray-100 rounded-lg shadow-md";
-
                         li.innerHTML = `
                             ${
                                 placeDetails.photos
@@ -280,14 +173,12 @@ document.addEventListener("DOMContentLoaded", function () {
                                     Get Directions
                                 </button>
 
-                                <button onclick="addToFavorites('${
-                                    placeDetails.name
-                                }', '${placeDetails.formatted_address}', 
-                                ${placeDetails.geometry.location.lat()}, ${placeDetails.geometry.location.lng()}, 
-                                '${contact}', '${openingHours}', '${website}', '${type}')" 
-                                    class="mt-2 px-4 py-2 bg-green-600 text-white rounded-md">
-                                    Add to Favorites
-                                </button>
+                                   <button onclick="viewOnMap(${place.geometry.location.lat()}, ${place.geometry.location.lng()}, '${
+                            place.name
+                        }')" 
+                                class="px-4 py-2 bg-green-600 text-white rounded-md">
+                            View on Map
+                        </button>
                             </div>
                         `;
 
@@ -295,8 +186,31 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 });
             });
-
             resultsContainer.appendChild(locationsList);
         });
     });
 });
+
+function viewOnMap(lat, lng, name) {
+    const location = new google.maps.LatLng(lat, lng);
+
+    map.setCenter(location);
+    map.setZoom(15);
+
+    const marker = new google.maps.Marker({
+        position: location,
+        map: map,
+        title: name,
+        animation: google.maps.Animation.DROP,
+    });
+
+    const infoWindow = new google.maps.InfoWindow({
+        content: `<strong>${name}</strong><br><p>Lat: ${lat}, Lng: ${lng}</p>`,
+    });
+
+    marker.addListener("click", () => {
+        infoWindow.open(map, marker);
+    });
+
+    infoWindow.open(map, marker);
+}

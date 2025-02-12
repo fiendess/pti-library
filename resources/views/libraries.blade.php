@@ -8,33 +8,24 @@
       </h1>
 
       <div class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
-        <!-- Form for searching specific location -->
         <form id="searchForm" action="{{ route('search.locations') }}" method="GET" class="flex items-center space-x-2">
-          <input type="text" id="locationInput" name="location" placeholder="Search for bookstores or libraries" required class="border p-2 rounded-md w-full sm:w-auto"/>
+          <input type="text" id="locationInput" name="location" placeholder="Enter Library name" required class="border p-2 rounded-md w-full sm:w-auto"/>
           <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">
-            Search Locations
+            Search Libraries
           </button>
         </form>
-
-        <!-- Button for searching current location -->
-        <button id="searchNearby" class="px-4 py-2 bg-green-600 text-white rounded-md mt-4 sm:mt-0 ml-2">
-          Find Near Me
-        </button>
       </div>
 
     <!-- Location Result Form -->
     <div id="locations-results-form" class="mt-4 space-y-4"></div>
-
     @if(session('error'))
         <div class="text-red-500">{{ session('error') }}</div>
     @endif
 
-
       <!-- Google Map Embed -->
-      <div id="map" style="width: 100%; height: 400px;" class="mt-8 border rounded-md"></div>
+      <div id="map" style="width: 100%; height: 340px;" class="mt-8 border rounded-md"></div>
     </div>
 
-    <!-- Locations Results By nearby -->
     <div class="mt-8 block w-full p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
       <div id="locations-results" class="mt-4"></div>
     </div>

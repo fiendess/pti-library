@@ -1,4 +1,6 @@
 <x-layout>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <div class="grid grid-cols-1 px-4 pt-6 xl:grid-cols-1 xl:gap-4 dark:bg-gray-900">
   <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-lg dark:border-gray-700 dark:bg-gray-800">
     <div class="mb-6">
@@ -23,31 +25,42 @@
       </div>
     </div>
 
-   <div class="mt-6 border-t pt-4">
-    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Additional Actions</h3>
-    <div class="mt-4 flex gap-4">
-        <button onclick="locateBook('{{ $book->isbn }}')" 
-                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-            Locate this book
+    <div class="mt-6 border-t pt-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Additional Actions</h3>
+      <div class="mt-4 flex gap-4">
+        <button onclick="addToWishlist('{{ $book->isbn ?? $book->google_id }}')"
+                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+            Add to Wishlist
         </button>
+      </div>
     </div>
-</div>
 
   </div>
 </div>
+
 <script>
-function locateBook(isbn) {
-    if (!isbn) {
-        alert("ISBN not available for this book.");
+function addToWishlist(bookId) {
+    if (!bookId) {
+        alert("Invalid book ID.");
         return;
     }
 
-    // Gunakan Google Places API untuk mencari perpustakaan atau toko buku terdekat
-    const query = `bookstore OR library near me with ISBN ${isbn}`;
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-
-    // Buka Google Maps di tab baru
-    window.open(googleMapsUrl, '_blank');
+    fetch("/wishlist/add", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+        },
+        body: JSON.stringify({ book_id: bookId }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message || "Book added to wishlist.");
+    })
+    .catch(error => {
+        console.error("⚠️ Fetch Error:", error);
+        alert("⚠️ Error adding book to wishlist.");
+    });
 }
 
 
